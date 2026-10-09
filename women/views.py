@@ -1,9 +1,12 @@
+from logging import exception
+
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.template.defaultfilters import slugify
 
+from .forms import AddPostForm
 from .models import Women, Category, TagPost
 
 menu = [{'title': "О сайте", 'url_name': 'about'},
@@ -43,7 +46,31 @@ def show_post(request, post_slug):
 
 
 def addpage(request):
-    return HttpResponse("Добавление статьи")
+    if request.method == 'POST':
+        form = AddPostForm(request.POST)
+        if form.is_valid():
+            # print(form.cleaned_data)
+            try:
+                Women.objects.create(
+                    title=form.cleaned_data['title'],
+                    slug=form.cleaned_data['slug'],
+                    content=form.cleaned_data['content'],
+                    is_published=form.cleaned_data['is_published'],
+                    cat=form.cleaned_data['cat'],
+                    husband=form.cleaned_data['husband'],
+                )
+                return redirect('home')
+            except:
+                form.add_error(None, 'Ошибка добавления поста')
+
+    else:
+        form = AddPostForm()
+    data = {
+        'menu': menu,
+        'title': 'Добавление статьи',
+        "form": form
+    }
+    return render(request, 'women/addpage.html', data)
 
 
 def contact(request):

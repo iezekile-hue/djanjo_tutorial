@@ -1,12 +1,13 @@
 from logging import exception
-
+from .models import *
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.template.defaultfilters import slugify
 
-from .forms import AddPostForm
+from .forms import AddPostForm, UploadFileForm
 from .models import Women, Category, TagPost
 
 menu = [{'title': "О сайте", 'url_name': 'about'},
@@ -28,8 +29,20 @@ def index(request):
     return render(request, 'women/index.html', context=data)
 
 
+# def handle_uploaded_file(f):
+#     with open(f'uploads/{f.name}', 'wb+') as destination:
+#         for chunk in f.chunks():
+#             destination.write(chunk)
+
 def about(request):
-    return render(request, 'women/about.html', {'title': 'О сайте', 'menu': menu})
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            fp = UploadFiles(file=form.cleaned_data['file'])
+            fp.save()
+    else:
+        form = UploadFileForm()
+    return render(request, 'women/about.html', {'title': 'О сайте', 'menu': menu, 'form': form})
 
 
 def show_post(request, post_slug):
@@ -47,7 +60,7 @@ def show_post(request, post_slug):
 
 def addpage(request):
     if request.method == 'POST':
-        form = AddPostForm(request.POST)
+        form = AddPostForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             # print(form.cleaned_data)
@@ -111,4 +124,5 @@ def show_tag_postlist(request, tag_slug):
     }
 
     return render(request, 'women/index.html', context=data)
+
 

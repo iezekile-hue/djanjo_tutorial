@@ -1,4 +1,7 @@
 from logging import exception
+
+from django.views.generic import TemplateView
+
 from .models import *
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect, HttpResponsePermanentRedirect
@@ -6,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.template.defaultfilters import slugify
-
+from django.views import View
 from .forms import AddPostForm, UploadFileForm
 from .models import Women, Category, TagPost
 
@@ -28,11 +31,14 @@ def index(request):
     }
     return render(request, 'women/index.html', context=data)
 
-
-# def handle_uploaded_file(f):
-#     with open(f'uploads/{f.name}', 'wb+') as destination:
-#         for chunk in f.chunks():
-#             destination.write(chunk)
+class WomenHome(TemplateView):
+    template_name = 'women/index.html'
+    extra_context = {
+        'title': 'Главная страница',
+        'menu': menu,
+        'posts': Women.published.all().select_related('cat'),
+        'cat_selected': 0,
+    }
 
 def about(request):
     if request.method == "POST":
@@ -86,6 +92,26 @@ def addpage(request):
     }
     return render(request, 'women/addpage.html', data)
 
+class AddPage(View):
+    def get(self, request):
+        form = AddPostForm()
+        data = {
+            'menu': menu,
+            'title': 'Добавление статьи',
+            "form": form
+        }
+        return render(request, 'women/addpage.html', data)
+    def post(self, request):
+        form = AddPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+        data = {
+            'menu': menu,
+            'title': 'Добавление статьи',
+            "form": form
+        }
+        return render(request, 'women/addpage.html', data)
 
 def contact(request):
     return HttpResponse("Обратная связь")

@@ -22,4 +22,9 @@
 {% endif %}
 
 {{post.content|linebreaks}}
+
+<p class="post-actions">
+    <a href="{% url 'edit_page' post.pk %}" class="edit-btn">Редактировать</a>
+    <a href="{% url 'delete_page' post.pk %}" class="delete-btn">Удалить статью</a>
+</p>
 {% endblock %}

@@ -407,3 +407,34 @@ ul.lang-list li a:hover {color: #fdc073;}
     min-width: 200px;
     font-size: 16px;
 }
+
+.post-actions a {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 6px;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.post-actions a.edit-btn {
+    color: #1976d2;
+    border: 2px solid #1976d2;
+}
+
+.post-actions a.edit-btn:hover {
+    background-color: #1976d2;
+    color: #fff;
+}
+
+.post-actions a.delete-btn {
+    color: #c62828;
+    border: 2px solid #c62828;
+}
+
+.post-actions a.delete-btn:hover {
+    background-color: #c62828;
+    color: #fff;
+}

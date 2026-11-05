@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from .models import *
 from django.http import HttpResponse, HttpResponseNotFound
@@ -17,23 +18,25 @@ class WomenHome(DataMixin,ListView):
     context_object_name = 'posts'
     title_page = 'Главная страница'
     cat_selected = 0
-    # extra_context = {
-    #     'title': 'Главная страница',
-    #     'menu': menu,
-    #     'cat_selected': 0,
-    # }
+
     def get_queryset(self):
         return Women.published.all().select_related('cat')
 
 def about(request):
-    if request.method == "POST":
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            fp = UploadFiles(file=form.cleaned_data['file'])
-            fp.save()
-    else:
-        form = UploadFileForm()
-    return render(request, 'women/about.html', {'title': 'О сайте', 'menu': menu, 'form': form})
+    contact_list = Women.published.all()
+    paginator = Paginator(contact_list, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    # if request.method == "POST":
+    #     form = UploadFileForm(request.POST, request.FILES)
+    #     if form.is_valid():
+    #         fp = UploadFiles(file=form.cleaned_data['file'])
+    #         fp.save()
+    # else:
+    #     form = UploadFileForm()
+    return render(request, 'women/about.html', {'title': 'О сайте',
+                                                'menu': menu,
+                                                'page_obj': page_obj})
 
 class ShowPost(DataMixin,DetailView):
     model = Women

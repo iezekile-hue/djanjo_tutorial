@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from .models import *
@@ -22,6 +24,7 @@ class WomenHome(DataMixin,ListView):
     def get_queryset(self):
         return Women.published.all().select_related('cat')
 
+@login_required
 def about(request):
     contact_list = Women.published.all()
     paginator = Paginator(contact_list, 3)
@@ -51,10 +54,15 @@ class ShowPost(DataMixin,DetailView):
     def get_object(self, queryset=None):
         return get_object_or_404(Women.published, slug=self.kwargs[self.slug_url_kwarg])
 
-class AddPage(DataMixin,CreateView):
+class AddPage(LoginRequiredMixin,DataMixin,CreateView):
     form_class = AddPostForm
     title_page = 'Добавление статьи'
     template_name = 'women/addpage.html'
+
+    def form_valid(self, form):
+        w = form.save(commit=False)
+        w.author = self.request.user
+        return super().form_valid(form)
 
 class UpdatePage(DataMixin,UpdateView):
     model = Women

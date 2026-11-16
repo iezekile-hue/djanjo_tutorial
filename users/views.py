@@ -3,7 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, UpdateView
 from .forms import *
-
+from .models import *
 
 class LoginUser(LoginView):
     form_class = LoginUserForm
@@ -28,6 +28,41 @@ class ProfileUser(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile, _ = Profile.objects.get_or_create(user=self.request.user)
+        if self.request.method == 'POST':
+            context['profile_form'] = ProfileForm(
+                self.request.POST, self.request.FILES,
+                instance=profile,
+            )
+        else:
+            context['profile_form'] = ProfileForm(instance=profile)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        profile_form = ProfileForm(
+            request.POST, request.FILES, instance=profile,
+        )
+
+        if form.is_valid() and profile_form.is_valid():
+            return self.form_valid(form, profile_form)
+        return self.form_invalid(form, profile_form)
+
+    def form_valid(self, form, profile_form):
+        # сохраняем обе формы
+        self.object = form.save()
+        profile_form.save()
+        return super().form_valid(form)   # редирект через get_success_url
+
+    def form_invalid(self, form, profile_form):
+        return self.render_to_response(
+            self.get_context_data(form=form, profile_form=profile_form)
+        )
 
 class UserPasswordChange(PasswordChangeView):
     form_class = UserPasswordChangeForm

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordChangeForm
+from .models import *
 
 
 class LoginUserForm(AuthenticationForm):
@@ -52,6 +53,17 @@ class ProfileUserForm(forms.ModelForm):
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'})
+        }
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['photo', 'date_birth']
+        widgets = {
+            'photo': forms.FileInput(attrs={'class': 'form-input'}),
+            'date_birth': forms.DateInput(
+                attrs={'class': 'form-input', 'type': 'date'},
+            ),
         }
 
 

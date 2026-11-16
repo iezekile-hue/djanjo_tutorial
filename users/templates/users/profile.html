@@ -1,20 +1,63 @@
 {% extends 'base.html' %}
- 
+
 {% block content %}
 <h1>Профиль</h1>
- 
-<form method="post">
+
+<form method="post" enctype="multipart/form-data" class="profile-form">
     {% csrf_token %}
-    <div class="form-error">{{ form.non_field_errors }}</div>
-    {% for f in form %}
-    <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
-    <div class="form-error">{{ f.errors }}</div>
-    {% endfor %}
- 
-    <p ><button type="submit">Сохранить</button></p>
+
+    <div class="form-errors-global">
+        {{ form.non_field_errors }}
+        {{ profile_form.non_field_errors }}
+    </div>
+
+    <div class="profile-container">
+
+        <!-- ЛЕВАЯ КОЛОНКА: Поля ввода -->
+        <div class="profile-fields">
+            {% for f in form %}
+            <p>
+                <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}:</label>
+                {{ f }}
+            </p>
+            <div class="form-error">{{ f.errors }}</div>
+            {% endfor %}
+
+            <p>
+                <label class="form-label" for="{{ profile_form.date_birth.id_for_label }}">{{ profile_form.date_birth.label }}:</label>
+                {{ profile_form.date_birth }}
+            </p>
+            <div class="form-error">{{ profile_form.date_birth.errors }}</div>
+
+            <p class="submit-btn-wrapper">
+                <button type="submit">Сохранить</button>
+            </p>
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: Фото -->
+        <div class="profile-photo">
+            <div class="photo-container">
+                {% if profile_form.instance.photo %}
+                    <img src="{{ profile_form.instance.photo.url }}" alt="Фото профиля">
+                {% else %}
+                    <div class="no-photo">Нет фото</div>
+                {% endif %}
+            </div>
+
+            <div class="photo-upload">
+                <label for="{{ profile_form.photo.id_for_label }}" class="upload-btn">
+                    Изменить фото
+                </label>
+                <!-- Скрываем стандартный инпут -->
+                <div class="hidden-input">
+                    {{ profile_form.photo }}
+                </div>
+                <div class="form-error">{{ profile_form.photo.errors }}</div>
+            </div>
+        </div>
+    </div>
 </form>
 
 <hr>
-<p><a href="{% url 'users:password_change' %}"> Сменить пароль</a></p>
-
+<p><a href="{% url 'users:password_change' %}">Сменить пароль</a></p>
 {% endblock %}
